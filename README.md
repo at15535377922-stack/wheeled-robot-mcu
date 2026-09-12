@@ -146,7 +146,7 @@ mm/s → RPM（四舍五入）→ 轮毂驱动器（CAN 0x181 / 0x602）
 6. **驻车模式**：无目标速度且平地静止超 10 秒进入驻车模式（驱动器输出功率减小），收到控制指令自动解除；斜坡上不驻车、不清 PWM，防止溜坡。
 7. **斜坡锁轴**：`auto_pwm_clear` 根据加速度融合值判断车身姿态，斜坡上对驱动器设置锁轴报警状态。
 8. **电机闭环**：使能/失能带反馈闭环，收到两个驱动器反馈后才结束命令发送；速度环使用增量式 PI（PWM 限幅 ±7200）。
-9. **RGB 灯带协议**：可通过 ROS/上位机设置灯带颜色，帧格式 `7B 04 01 R G B 00 00 00 BCC 7D`（详见 `更新记录.txt` 2023.08.29 条目）。
+9. **RGB 灯带协议**：可通过 ROS/上位机设置灯带颜色，帧格式 `7B 04 01 R G B 00 00 00 BCC 7D`（`7B 04` 表示设置灯带，`01` 表示开启自定义设置）。
 10. **APP 调试**：APP 聊天界面发送 `debug`，小车逐行输出调试数据。
 
 ## 七、编译与烧录
@@ -159,69 +159,66 @@ mm/s → RPM（四舍五入）→ 轮毂驱动器（CAN 0x181 / 0x602）
 
 > 注意：源码注释中多处提示“GD32 平台需关闭 `USE_DWT_CORE`”，如使用 GD32 兼容芯片请按注释调整。
 
-## 八、版本更新记录
+## 八、版本记录
 
-详见仓库内 `更新记录.txt`，主要里程碑：
+| 版本 | 日期 | 说明 |
+|------|------|------|
+| v1.0 | 2026-09-12 | 初始版本：轮式移动机器人底盘 MCU 控制代码，首次发布（提交 `8662fcc`） |
 
-- 2022.12.16：第 1 次整理底盘资料
-- 2023.01.12：新增底盘自检，修复低概率溜车事件
-- 2023.08.29：命令丢失 1 秒停车安全保护；支持 ROS 修改 RGB 灯带
-- 2023.11.08：CAN 帧 ID 调整（0x183→0x181 控制，0x185 编码器反馈）；低电量紫灯提示并锁电机
-- 2023.12.20：修复 CAN 连续发送延迟问题；新增四驱（S200）车型
-- 2024.05.22：APP `debug` 调试功能；新增驻车模式
-- 2024.10.24：底盘无状态时灯带熄灭省电；S200 参数优化
+> 后续每次改动通过 Git 提交信息记录（见下节"提交信息规范"），重要版本变更可在本表追加新行。
 
-## 九、Git 版本管理
+## 九、后续开发与维护
 
-### 9.1 初始化仓库（首次）
+### 9.1 日常开发流程
+
+项目已初始化并推送到 GitHub（SSH 远程：`git@github.com:at15535377922-stack/wheeled-robot-mcu.git`）。以后每次修改代码，按以下五步操作：
 
 ```bash
-# 1. 进入项目根目录
 cd D:\UserFiles\Desktop\面试\C63A
 
-# 2. 初始化 Git 仓库
-git init
-
-# 3. 添加远程仓库（GitHub 或 Gitee 先创建空仓库，把地址替换成你自己的）
-git remote add origin https://github.com/你的用户名/wheeled-robot-mcu.git
-# 或 Gitee：
-# git remote add origin https://gitee.com/你的用户名/wheeled-robot-mcu.git
+git status          # ① 查看改动（红色 = 已修改/新增）
+git diff            # ② 确认具体改动内容
+git add .           # ③ 暂存全部改动
+git commit -m "类型: 简述改动内容"   # ④ 提交到本地
+git push            # ⑤ 推送到 GitHub
 ```
 
-### 9.2 提交代码
+> 提交前建议先在 Keil 中编译通过，避免把编译错误的历史提交到仓库。
+
+### 9.2 提交信息规范（建议）
+
+格式：`类型: 简述`（类型 + 英文冒号 + 空格 + 说明）
+
+| 类型 | 含义 | 示例 |
+|------|------|------|
+| `feat` | 新功能 | `feat: 新增超声波避障开关指令` |
+| `fix` | 修复问题 | `fix: 修复低电量误锁电机` |
+| `docs` | 文档改动 | `docs: 更新 README` |
+| `refactor` | 代码重构 | `refactor: 整理 CAN 发送逻辑` |
+| `perf` | 性能优化 | `perf: 降低显示任务占用` |
+
+### 9.3 分支管理（可选）
+
+- `master` 为稳定主分支，保持随时可编译、可运行；
+- 大改动建议开功能分支，完成后合并回主分支：
 
 ```bash
-# 查看当前状态（红色 = 未跟踪/已修改）
-git status
-
-# 添加全部文件（已配置 .gitignore，会跳过 OBJ/编译产物等）
-git add .
-
-# 提交到本地仓库
-git commit -m "初始提交：轮式移动机器人底盘 MCU 控制代码"
-
-# 推送（首次加 -u，之后直接 git push）
-git push -u origin master
-```
-
-### 9.3 日常更新
-
-```bash
-git add .
-git commit -m "更新说明：..."
-git push
+git checkout -b feature/超声波避障    # 新建并切换功能分支
+git push -u origin feature/超声波避障  # 推送分支到远程
+git checkout master                   # 切回主分支
+git merge feature/超声波避障          # 合并功能分支
 ```
 
 ### 9.4 常用命令速查
 
 | 命令 | 作用 |
 |------|------|
-| `git init` | 初始化仓库 |
+| `git status` | 查看状态 |
+| `git diff` | 查看改动内容 |
 | `git add .` | 暂存所有改动 |
 | `git commit -m "说明"` | 提交到本地 |
 | `git push` | 推送到远程 |
 | `git pull` | 拉取远程更新 |
-| `git status` | 查看状态 |
 | `git log --oneline` | 查看提交历史 |
 | `git clone 地址` | 克隆仓库到本地 |
 | `git checkout -b 分支名` | 新建并切换分支 |
@@ -229,14 +226,7 @@ git push
 ### 9.5 注意事项
 
 - **不要提交 `OBJ/` 目录**（编译产物）、根目录 bin 固件、`*.uvguix*`（Keil 个人界面配置）和 `.vscode/`（本机配置），项目已提供 `.gitignore` 自动排除。
-- 首次推送前需配置 Git 身份：
-
-```bash
-git config --global user.name "你的名字"
-git config --global user.email "你的邮箱"
-```
-
-- 如推送到 GitHub 提示认证失败，推荐使用 **Personal Access Token（PAT）** 作为密码，或安装 [GitHub Desktop](https://desktop.github.com/) 图形化操作。
+- Git 身份已配置为 `fly7922 <at15535377922@gmail.com>`；SSH 密钥已绑定 GitHub，提交无需密码。
 
 ---
 
