@@ -1,0 +1,42 @@
+# ===== Keil MDK 编译产物 =====
+OBJ/
+*.o
+*.d
+*.crf
+*.axf
+*.hex
+*.bin
+*.map
+*.lst
+*.htm
+*.lnp
+*.dep
+*.sct
+*.sct.bak
+*.build_log.htm
+*.tra
+
+# ===== Keil 个人界面配置（勿提交） =====
+*.uvguix.*
+*.uvoptx
+JLinkSettings.ini
+EventRecorderStub.scvd
+
+# ===== 调试/日志 =====
+DebugConfig/
+*.log
+*.log.lock
+
+# ===== VS Code 本地配置 =====
+.vscode/
+
+# ===== 备份与临时文件 =====
+*.bak
+*.orig
+*~
+*.tmp
+
+# ===== 系统文件 =====
+Thumbs.db
+Desktop.ini
+.DS_Store
